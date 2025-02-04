@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-configuration android:name="android.permission.INTERNET" />
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.CALL_PHONE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <application
+        android:name=".MyApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        tools:targetApi="31">
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_small_push_notification" />
+
+        <service
+            android:name="com.xuangand.rhythmoflife.service.MusicService"
+            android:foregroundServiceType="specialUse"
+            android:exported="false" />
+
+        <receiver
+            android:name="com.xuangand.rhythmoflife.service.MusicReceiver"
+            android:exported="false" />
+
+        <activity
+            android:exported="true"
+            android:name="com.xuangand.rhythmoflife.activity.SplashActivity">
+            <intent-filter>
+                <action
+                    android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:exported="false"
+            android:name="com.xuangand.rhythmoflife.activity.MainActivity" />
+
+        <activity
+            android:exported="false"
+            android:name="com.xuangand.rhythmoflife.activity.PlayMusicActivity" />
+
+        <activity
+            android:exported="false"
+            android:name="com.xuangand.rhythmoflife.activity.SignInActivity" />
+
+        <activity
+            android:exported="false"
+            android:name="com.xuangand.rhythmoflife.activity.SignUpActivity" />
+
+        <activity
+            android:exported="false"
+            android:name="com.xuangand.rhythmoflife.activity.ForgotPasswordActivity" />
+
+        <activity
+            android:exported="false"
+            android:name="com.xuangand.rhythmoflife.activity.AdminMainActivity" />
+
+        <activity
+            android:exported="false"
+            android:name="com.xuangand.rhythmoflife.activity.AdminChangePasswordActivity" />
+
+        <activity
+            android:exported="false"
+            android:name="com.xuangand.rhythmoflife.activity.AdminAddCategoryActivity" />
+
+        <activity
+            android:exported="false"
+            android:name="com.xuangand.rhythmoflife.activity.AdminAddArtistActivity" />
+
+        <activity
+            android:exported="false"
+            android:name="com.xuangand.rhythmoflife.activity.AdminAddSongActivity" />
+
+        <activity
+            android:exported="false"
+            android:name="com.xuangand.rhythmoflife.activity.AdminCategorySongActivity" />
+
+        <activity
+            android:exported="false"
+            android:name="com.xuangand.rhythmoflife.activity.AdminArtistSongActivity" />
+    </application>
+
+</manifest>

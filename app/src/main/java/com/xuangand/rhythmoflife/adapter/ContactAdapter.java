@@ -18,16 +18,12 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
 
     private Context context;
     private final List<Contact> listContact;
-    private final ICallPhone iCallPhone;
 
-    public interface ICallPhone {
-        void onClickCallPhone();
-    }
 
-    public ContactAdapter(Context context, List<Contact> listContact, ICallPhone iCallPhone) {
+
+    public ContactAdapter(Context context, List<Contact> listContact) {
         this.context = context;
         this.listContact = listContact;
-        this.iCallPhone = iCallPhone;
     }
 
     @NonNull
@@ -49,24 +45,8 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
                 holder.mItemContactBinding.tvContact.setText(context.getString(R.string.label_facebook));
                 break;
 
-            case Contact.HOTLINE:
-                holder.mItemContactBinding.tvContact.setText(context.getString(R.string.label_call));
-                break;
-
-            case Contact.GMAIL:
-                holder.mItemContactBinding.tvContact.setText(context.getString(R.string.label_gmail));
-                break;
-
-            case Contact.SKYPE:
-                holder.mItemContactBinding.tvContact.setText(context.getString(R.string.label_skype));
-                break;
-
-            case Contact.YOUTUBE:
-                holder.mItemContactBinding.tvContact.setText(context.getString(R.string.label_youtube));
-                break;
-
-            case Contact.ZALO:
-                holder.mItemContactBinding.tvContact.setText(context.getString(R.string.label_zalo));
+            case Contact.INSTAGRAM:
+                holder.mItemContactBinding.tvContact.setText(context.getString(R.string.label_instagram));
                 break;
         }
 
@@ -76,24 +56,8 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
                     GlobalFunction.onClickOpenFacebook(context);
                     break;
 
-                case Contact.HOTLINE:
-                    iCallPhone.onClickCallPhone();
-                    break;
-
-                case Contact.GMAIL:
-                    GlobalFunction.onClickOpenGmail(context);
-                    break;
-
-                case Contact.SKYPE:
-                    GlobalFunction.onClickOpenSkype(context);
-                    break;
-
-                case Contact.YOUTUBE:
-                    GlobalFunction.onClickOpenYoutubeChannel(context);
-                    break;
-
-                case Contact.ZALO:
-                    GlobalFunction.onClickOpenZalo(context);
+                case Contact.INSTAGRAM:
+                    GlobalFunction.onClickOpenInstagram(context);
                     break;
             }
         });

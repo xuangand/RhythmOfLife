@@ -43,9 +43,8 @@ public class ContactFragment extends Fragment {
         mFragmentContactBinding.tvAboutUsContent.setText(AboutUsConfig.ABOUT_US_CONTENT);
         mFragmentContactBinding.tvAboutUsWebsite.setText(AboutUsConfig.ABOUT_US_WEBSITE_TITLE);
 
-        mContactAdapter = new ContactAdapter(getActivity(), getListContact(),
-                () -> GlobalFunction.callPhoneNumber(getActivity()));
-        GridLayoutManager layoutManager = new GridLayoutManager(getActivity(), 3);
+        mContactAdapter = new ContactAdapter(getActivity(), getListContact());
+        GridLayoutManager layoutManager = new GridLayoutManager(getActivity(), 2);
         mFragmentContactBinding.rcvData.setNestedScrollingEnabled(false);
         mFragmentContactBinding.rcvData.setFocusable(false);
         mFragmentContactBinding.rcvData.setLayoutManager(layoutManager);
@@ -60,11 +59,7 @@ public class ContactFragment extends Fragment {
     public List<Contact> getListContact() {
         List<Contact> contactArrayList = new ArrayList<>();
         contactArrayList.add(new Contact(Contact.FACEBOOK, R.drawable.ic_facebook));
-        contactArrayList.add(new Contact(Contact.HOTLINE, R.drawable.ic_hotline));
-        contactArrayList.add(new Contact(Contact.GMAIL, R.drawable.ic_gmail));
-        contactArrayList.add(new Contact(Contact.SKYPE, R.drawable.ic_skype));
-        contactArrayList.add(new Contact(Contact.YOUTUBE, R.drawable.ic_youtube));
-        contactArrayList.add(new Contact(Contact.ZALO, R.drawable.ic_zalo));
+        contactArrayList.add(new Contact(Contact.INSTAGRAM, R.drawable.ic_instagram));
 
         return contactArrayList;
     }

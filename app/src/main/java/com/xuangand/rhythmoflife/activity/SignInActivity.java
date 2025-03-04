@@ -27,18 +27,41 @@ public class SignInActivity extends BaseActivity {
     }
 
     private void initListener() {
-        mActivitySignInBinding.rdbUser.setChecked(true);
+        //mActivitySignInBinding.rdbUser.setChecked(true);
         mActivitySignInBinding.layoutSignUp.setOnClickListener(
                 v -> GlobalFunction.startActivity(SignInActivity.this, SignUpActivity.class));
 
         mActivitySignInBinding.btnSignIn.setOnClickListener(v -> onClickValidateSignIn());
-        mActivitySignInBinding.tvForgotPassword.setOnClickListener(v -> onClickForgotPassword());
+        mActivitySignInBinding.tvForgotPassword.setOnClickListener(
+                v -> GlobalFunction.startActivity(this, ForgotPasswordActivity.class));
     }
 
-    private void onClickForgotPassword() {
-        GlobalFunction.startActivity(this, ForgotPasswordActivity.class);
-    }
-
+//    private void onClickValidateSignIn() {
+//        String strEmail = mActivitySignInBinding.edtEmail.getText().toString().trim();
+//        String strPassword = mActivitySignInBinding.edtPassword.getText().toString().trim();
+//        if (StringUtil.isEmpty(strEmail)) {
+//            Toast.makeText(SignInActivity.this, getString(R.string.msg_email_require), Toast.LENGTH_SHORT).show();
+//        } else if (StringUtil.isEmpty(strPassword)) {
+//            Toast.makeText(SignInActivity.this, getString(R.string.msg_password_require), Toast.LENGTH_SHORT).show();
+//        } else if (!StringUtil.isValidEmail(strEmail)) {
+//            Toast.makeText(SignInActivity.this, getString(R.string.msg_email_invalid), Toast.LENGTH_SHORT).show();
+//        } else {
+//            if (mActivitySignInBinding.rdbAdmin.isChecked()) {
+//                if (!strEmail.contains(Constant.ADMIN_EMAIL_FORMAT)) {
+//                    Toast.makeText(SignInActivity.this, getString(R.string.msg_email_invalid_admin), Toast.LENGTH_SHORT).show();
+//                } else {
+//                    signInUser(strEmail, strPassword);
+//                }
+//                return;
+//            }
+//
+//            if (strEmail.contains(Constant.ADMIN_EMAIL_FORMAT)) {
+//                Toast.makeText(SignInActivity.this, getString(R.string.msg_email_invalid_user), Toast.LENGTH_SHORT).show();
+//            } else {
+//                signInUser(strEmail, strPassword);
+//            }
+//        }
+//    }
     private void onClickValidateSignIn() {
         String strEmail = mActivitySignInBinding.edtEmail.getText().toString().trim();
         String strPassword = mActivitySignInBinding.edtPassword.getText().toString().trim();
@@ -49,20 +72,7 @@ public class SignInActivity extends BaseActivity {
         } else if (!StringUtil.isValidEmail(strEmail)) {
             Toast.makeText(SignInActivity.this, getString(R.string.msg_email_invalid), Toast.LENGTH_SHORT).show();
         } else {
-            if (mActivitySignInBinding.rdbAdmin.isChecked()) {
-                if (!strEmail.contains(Constant.ADMIN_EMAIL_FORMAT)) {
-                    Toast.makeText(SignInActivity.this, getString(R.string.msg_email_invalid_admin), Toast.LENGTH_SHORT).show();
-                } else {
-                    signInUser(strEmail, strPassword);
-                }
-                return;
-            }
-
-            if (strEmail.contains(Constant.ADMIN_EMAIL_FORMAT)) {
-                Toast.makeText(SignInActivity.this, getString(R.string.msg_email_invalid_user), Toast.LENGTH_SHORT).show();
-            } else {
-                signInUser(strEmail, strPassword);
-            }
+            signInUser(strEmail, strPassword);
         }
     }
 

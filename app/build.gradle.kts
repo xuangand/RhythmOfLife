@@ -49,6 +49,7 @@ dependencies {
     implementation(libs.circleimageview)
     implementation(libs.circleindicator)
     implementation(libs.gson)
+    implementation("com.google.android.gms:play-services-ads:24.0.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

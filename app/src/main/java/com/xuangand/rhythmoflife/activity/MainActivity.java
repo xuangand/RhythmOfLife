@@ -85,36 +85,42 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         mActivityMainBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mActivityMainBinding.getRoot());
-        new Thread(
-                () -> {
-                    // Initialize the Google Mobile Ads SDK on a background thread.
-                    MobileAds.initialize(this, initializationStatus -> {});
-                })
-                .start();
-        AdRequest adRequest = new AdRequest.Builder().build();
 
-        InterstitialAd.load(this,"ca-app-pub-3940256099942544/1033173712", adRequest,
-                new InterstitialAdLoadCallback() {
-                    @Override
-                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
-                        // The mInterstitialAd reference will be null until
-                        // an ad is loaded.
-                        mInterstitialAd = interstitialAd;
-                        if (mInterstitialAd != null) {
-                            mInterstitialAd.show(MainActivity.this);
-                        } else {
-                            Log.d("TAG", "The interstitial ad wasn't ready yet.");
-                        }
-                        Log.i(TAG, "onAdLoaded");
-                    }
+        MobileAds.initialize(this, initializationStatus -> {
+            // Load ads AFTER initialization completes
+            loadInterstitialAd();
+        });
 
-                    @Override
-                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                        // Handle the error
-                        Log.d(TAG, loadAdError.toString());
-                        mInterstitialAd = null;
-                    }
-                });
+//        new Thread(
+//                () -> {
+//                    // Initialize the Google Mobile Ads SDK on a background thread.
+//                    MobileAds.initialize(this, initializationStatus -> {});
+//                })
+//                .start();
+//        AdRequest adRequest = new AdRequest.Builder().build();
+//
+//        InterstitialAd.load(this,"ca-app-pub-3018892996143210/5054373360", adRequest,
+//                new InterstitialAdLoadCallback() {
+//                    @Override
+//                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+//                        // The mInterstitialAd reference will be null until
+//                        // an ad is loaded.
+//                        mInterstitialAd = interstitialAd;
+//                        if (mInterstitialAd != null) {
+//                            mInterstitialAd.show(MainActivity.this);
+//                        } else {
+//                            Log.d("TAG", "The interstitial ad wasn't ready yet.");
+//                        }
+//                        Log.i(TAG, "onAdLoaded");
+//                    }
+//
+//                    @Override
+//                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+//                        // Handle the error
+//                        Log.d(TAG, loadAdError.toString());
+//                        mInterstitialAd = null;
+//                    }
+//                });
 
         checkNotificationPermission();
         LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver,
@@ -123,6 +129,26 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         displayUserInformation();
         initListener();
         displayLayoutBottom();
+    }
+
+    private void loadInterstitialAd() {
+        AdRequest adRequest = new AdRequest.Builder().build();
+
+        InterstitialAd.load(this,"ca-app-pub-3018892996143210/2836076589", adRequest,
+                new InterstitialAdLoadCallback() {
+                    @Override
+                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                        mInterstitialAd = interstitialAd;
+                        // Don't show immediately, save reference for later
+                        Log.i(TAG, "Ad loaded");
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                        Log.e(TAG, "Ad failed: " + loadAdError.getMessage());
+                        mInterstitialAd = null;
+                    }
+                });
     }
 
 

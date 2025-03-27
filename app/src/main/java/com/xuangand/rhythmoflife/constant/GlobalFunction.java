@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -21,6 +22,12 @@ import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
 import com.xuangand.rhythmoflife.MyApplication;
 import com.xuangand.rhythmoflife.R;
 import com.xuangand.rhythmoflife.activity.MainActivity;
@@ -290,5 +297,44 @@ public class GlobalFunction {
         if (downloadManager != null) {
             downloadManager.enqueue(request);
         }
+    }
+    public static ListenerRegistration subscriptionListener;
+    public static void checkSubscription(OnSubscriptionCheckListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        FirebaseUser user = auth.getCurrentUser();
+        long oneMonthAgo = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000); // 30 days ago
+        if (user == null) {
+            listener.onResult(false); // User not logged in
+            return;
+        }
+        String userId = user.getUid();
+        Query query = db.collection("PurchasedHistory")
+                .whereEqualTo("user_id", userId)
+                .orderBy("date", Query.Direction.DESCENDING)
+                .limit(1);
+
+        subscriptionListener = query.addSnapshotListener((queryDocumentSnapshots, error) -> {
+            if (error != null) {
+                Log.e("Firestore", "Error checking subscription", error);
+                listener.onResult(false);
+                return;
+            }
+
+            if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
+                DocumentSnapshot latestPayment = queryDocumentSnapshots.getDocuments().get(0);
+                Long paymentDate = latestPayment.getLong("date");
+                String transactionToken = latestPayment.getString("transaction_token");
+
+                // Check if the latest payment is within the last 30 days and has a valid transaction token
+                listener.onResult(paymentDate != null && paymentDate > oneMonthAgo &&
+                        transactionToken != null && !transactionToken.isEmpty());  // Subscription is active/expired
+            } else {
+                listener.onResult(false); // No payment history found
+            }
+        });
+    }
+    public interface OnSubscriptionCheckListener {
+        void onResult(boolean isActive);
     }
 }

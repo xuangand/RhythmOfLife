@@ -24,7 +24,11 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.appopen.AppOpenAd;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.xuangand.rhythmoflife.R;
 import com.xuangand.rhythmoflife.constant.Constant;
 import com.xuangand.rhythmoflife.constant.GlobalFunction;
@@ -41,15 +45,19 @@ import com.xuangand.rhythmoflife.fragment.PopularSongsFragment;
 import com.xuangand.rhythmoflife.fragment.SearchFragment;
 import com.xuangand.rhythmoflife.fragment.SongsByArtistFragment;
 import com.xuangand.rhythmoflife.fragment.SongsByCategoryFragment;
+import com.xuangand.rhythmoflife.fragment.UpgradeFragment;
 import com.xuangand.rhythmoflife.model.Artist;
 import com.xuangand.rhythmoflife.model.Category;
 import com.xuangand.rhythmoflife.model.Song;
 import com.xuangand.rhythmoflife.model.User;
 import com.xuangand.rhythmoflife.prefs.DataStoreManager;
 import com.xuangand.rhythmoflife.service.MusicService;
+import com.xuangand.rhythmoflife.utils.AppOpenAdManager;
 import com.xuangand.rhythmoflife.utils.GlideUtils;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
+
+import vn.zalopay.sdk.ZaloPaySDK;
 
 @SuppressLint("NonConstantResourceId")
 public class MainActivity extends BaseActivity implements View.OnClickListener {
@@ -65,11 +73,17 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     public static final int TYPE_CHANGE_PASSWORD = 9;
 
     private static final int REQUEST_PERMISSION_CODE = 10;
+    public static final int TYPE_UPGRADE = 11;
     private Song mSong;
 
     private int mTypeScreen = TYPE_HOME;
     private ActivityMainBinding mActivityMainBinding;
     private int mAction;
+    //private static final String AD_UNIT_ID = "ca-app-pub-3018892996143210/2836076589";
+    //InterstitialAd example: ca-app-pub-3940256099942544/1033173712
+    private static final String AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712";
+    private AppOpenAdManager appOpenAdManager;
+
     private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -86,71 +100,78 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         mActivityMainBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mActivityMainBinding.getRoot());
 
-        MobileAds.initialize(this, initializationStatus -> {
-            // Load ads AFTER initialization completes
-            loadInterstitialAd();
-        });
-
-//        new Thread(
-//                () -> {
-//                    // Initialize the Google Mobile Ads SDK on a background thread.
-//                    MobileAds.initialize(this, initializationStatus -> {});
-//                })
-//                .start();
-//        AdRequest adRequest = new AdRequest.Builder().build();
-//
-//        InterstitialAd.load(this,"ca-app-pub-3018892996143210/5054373360", adRequest,
-//                new InterstitialAdLoadCallback() {
-//                    @Override
-//                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
-//                        // The mInterstitialAd reference will be null until
-//                        // an ad is loaded.
-//                        mInterstitialAd = interstitialAd;
-//                        if (mInterstitialAd != null) {
-//                            mInterstitialAd.show(MainActivity.this);
-//                        } else {
-//                            Log.d("TAG", "The interstitial ad wasn't ready yet.");
-//                        }
-//                        Log.i(TAG, "onAdLoaded");
-//                    }
-//
-//                    @Override
-//                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-//                        // Handle the error
-//                        Log.d(TAG, loadAdError.toString());
-//                        mInterstitialAd = null;
-//                    }
-//                });
-
         checkNotificationPermission();
         LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver,
                 new IntentFilter(Constant.CHANGE_LISTENER));
         openHomeScreen();
         displayUserInformation();
+        checkSubscription();
         initListener();
         displayLayoutBottom();
     }
 
     private void loadInterstitialAd() {
+        new Thread(
+                () -> {
+                    // Initialize the Google Mobile Ads SDK on a background thread.
+                    MobileAds.initialize(this, initializationStatus -> {});
+                })
+                .start();
         AdRequest adRequest = new AdRequest.Builder().build();
-
-        InterstitialAd.load(this,"ca-app-pub-3018892996143210/2836076589", adRequest,
+        //"ca-app-pub-3018892996143210/5054373360"
+        InterstitialAd.load(this,AD_UNIT_ID, adRequest,
                 new InterstitialAdLoadCallback() {
                     @Override
                     public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                        // The mInterstitialAd reference will be null until
+                        // an ad is loaded.
                         mInterstitialAd = interstitialAd;
-                        // Don't show immediately, save reference for later
-                        Log.i(TAG, "Ad loaded");
+                        if (mInterstitialAd != null) {
+                            mInterstitialAd.show(MainActivity.this);
+                        } else {
+                            Log.d("TAG", "The interstitial ad wasn't ready yet.");
+                        }
+                        Log.i(TAG, "onAdLoaded");
                     }
 
                     @Override
                     public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                        Log.e(TAG, "Ad failed: " + loadAdError.getMessage());
+                        // Handle the error
+                        Log.d(TAG, loadAdError.toString());
                         mInterstitialAd = null;
                     }
                 });
     }
+    private void updateUiForSubscription(boolean isPro) {
+        // Update UI to reflect subscription status
+        if (isPro) {
+            Log.d("Subscription", "User is Pro, updating UI...");
+            // Show Pro version UI elements
+            mActivityMainBinding.menuLeft.tvAppVersion.setText(getString(R.string.label_app_version_pro));
+            mActivityMainBinding.menuLeft.layoutMenuUpgrade.setVisibility(View.GONE);
+        } else {
+            Log.d("Subscription", "User is not Pro.");
+            // Keep the Free UI
+            mActivityMainBinding.menuLeft.tvAppVersion.setText(getString(R.string.label_app_version_free));
+            mActivityMainBinding.menuLeft.layoutMenuUpgrade.setVisibility(View.VISIBLE);
+            loadInterstitialAd();
+        }
+    }
 
+    private void checkSubscription() {
+//        GlobalFunction.checkSubscription(isActive -> {
+//            if (isActive) {
+//                mActivityMainBinding.menuLeft.tvAppVersion.setText(getString(R.string.label_app_version_pro));
+//                mActivityMainBinding.menuLeft.layoutMenuUpgrade.setVisibility(View.GONE);
+//            }
+//        });
+        GlobalFunction.checkSubscription(new GlobalFunction.OnSubscriptionCheckListener() {
+            @Override
+            public void onResult(boolean isPro) {
+                updateUiForSubscription(isPro);
+            }
+        });
+    }
 
     private void checkNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -217,6 +238,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 handleDisplayButtonPlayAll(false);
                 break;
 
+            case TYPE_UPGRADE:
+                handleToolbarTitle(getString(R.string.menu_upgrade));
+                handleDisplayIconHeader(true);
+                handleDisplayButtonPlayAll(false);
+                break;
+
             case TYPE_CHANGE_PASSWORD:
                 handleToolbarTitle(getString(R.string.menu_change_password));
                 handleDisplayIconHeader(true);
@@ -263,6 +290,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         mActivityMainBinding.menuLeft.layoutMenuFavoriteSongs.setOnClickListener(this);
         mActivityMainBinding.menuLeft.layoutMenuFeedback.setOnClickListener(this);
         mActivityMainBinding.menuLeft.layoutMenuContact.setOnClickListener(this);
+        mActivityMainBinding.menuLeft.layoutMenuUpgrade.setOnClickListener(this);
         mActivityMainBinding.menuLeft.layoutMenuChangePassword.setOnClickListener(this);
         mActivityMainBinding.menuLeft.layoutMenuSignOut.setOnClickListener(this);
 
@@ -294,103 +322,108 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private void openHomeScreen() {
-        replaceFragment(new HomeFragment());
+        replaceFragment(new HomeFragment(), "HomeFragment");
         mTypeScreen = TYPE_HOME;
         initHeader();
     }
 
     public void openCategoryScreen() {
-        replaceFragment(CategoryFragment.newInstance(true));
+        replaceFragment(CategoryFragment.newInstance(true), "CategoryFragment");
         mTypeScreen = TYPE_CATEGORY;
         initHeader();
     }
 
     private void openArtistScreen() {
-        replaceFragment(ArtistFragment.newInstance(true));
+        replaceFragment(ArtistFragment.newInstance(true), "ArtistFragment");
         mTypeScreen = TYPE_ARTIST;
         initHeader();
     }
 
     private void openAllSongsScreen() {
-        replaceFragment(new AllSongsFragment());
+        replaceFragment(new AllSongsFragment(), "AllSongsFragment");
         mTypeScreen = TYPE_ALL_SONGS;
         initHeader();
     }
 
     public void openPopularSongsScreen() {
-        replaceFragment(new PopularSongsFragment());
+        replaceFragment(new PopularSongsFragment(), "PopularSongsFragment");
         mTypeScreen = TYPE_POPULAR_SONGS;
         initHeader();
     }
 
     public void openFavoriteSongsScreen() {
-        replaceFragment(new FavoriteFragment());
+        replaceFragment(new FavoriteFragment(), "FavoriteFragment");
         mTypeScreen = TYPE_FAVORITE_SONGS;
         initHeader();
     }
 
     private void openFeedbackScreen() {
-        replaceFragment(new FeedbackFragment());
+        replaceFragment(new FeedbackFragment(), "FeedbackFragment");
         mTypeScreen = TYPE_FEEDBACK;
         initHeader();
     }
 
     private void openContactScreen() {
-        replaceFragment(new ContactFragment());
+        replaceFragment(new ContactFragment(), "ContactFragment");
         mTypeScreen = TYPE_CONTACT;
+        initHeader();
+    }
+    private void openUpgradeScreen() {
+        replaceFragment(new UpgradeFragment(), "UpgradeFragment");
+        mTypeScreen = TYPE_UPGRADE;
         initHeader();
     }
 
     private void openChangePasswordScreen() {
-        replaceFragment(new ChangePasswordFragment());
+        replaceFragment(new ChangePasswordFragment(), "ChangePasswordFragment");
         mTypeScreen = TYPE_CHANGE_PASSWORD;
         initHeader();
     }
 
     public void clickSeeAllCategory() {
-        addFragment(CategoryFragment.newInstance(false));
+        addFragment(CategoryFragment.newInstance(false), "CategoryFragment");
         handleToolbarTitle(getString(R.string.menu_category));
         handleDisplayIconHeader(false);
         handleDisplayButtonPlayAll(false);
     }
 
     public void clickSeeAllArtist() {
-        addFragment(ArtistFragment.newInstance(false));
+        addFragment(ArtistFragment.newInstance(false), "ArtistFragment");
         handleToolbarTitle(getString(R.string.menu_artist));
         handleDisplayIconHeader(false);
         handleDisplayButtonPlayAll(false);
     }
 
     public void clickSeeAllPopularSongs() {
-        addFragment(new PopularSongsFragment());
+        addFragment(new PopularSongsFragment(), "PopularSongsFragment");
         handleToolbarTitle(getString(R.string.menu_popular_songs));
         handleDisplayIconHeader(false);
         handleDisplayButtonPlayAll(true);
     }
 
     public void clickSeeAllFavoriteSongs() {
-        addFragment(new FavoriteFragment());
+        addFragment(new FavoriteFragment(), "FavoriteFragment");
         handleToolbarTitle(getString(R.string.menu_favorite_songs));
         handleDisplayIconHeader(false);
         handleDisplayButtonPlayAll(true);
     }
 
     public void clickOpenSongsByCategory(Category category) {
-        addFragment(SongsByCategoryFragment.newInstance(category.getId()));
+        addFragment(SongsByCategoryFragment.newInstance(category.getId()), "SongsByCategoryFragment");
         handleToolbarTitle(category.getName());
         handleDisplayIconHeader(false);
         handleDisplayButtonPlayAll(true);
     }
 
     public void clickOpenSongsByArtist(Artist artist) {
-        addFragment(SongsByArtistFragment.newInstance(artist.getId()));
+        addFragment(SongsByArtistFragment.newInstance(artist.getId()), "SongsByArtistFragment");
         handleToolbarTitle(artist.getName());
         handleDisplayIconHeader(false);
         handleDisplayButtonPlayAll(true);
     }
 
     public void clickSearchSongScreen() {
-        addFragment(new SearchFragment());
+        addFragment(new SearchFragment(), "SearchFragment");
         handleToolbarTitle(getString(R.string.label_search));
         handleDisplayIconHeader(false);
         handleDisplayButtonPlayAll(true);
@@ -425,6 +458,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         } else if (id == R.id.layout_menu_contact) {
             mActivityMainBinding.drawerLayout.closeDrawer(GravityCompat.START);
             openContactScreen();
+        } else if (id == R.id.layout_menu_upgrade) {
+            mActivityMainBinding.drawerLayout.closeDrawer(GravityCompat.START);
+            openUpgradeScreen();
         } else if (id == R.id.layout_menu_change_password) {
             mActivityMainBinding.drawerLayout.closeDrawer(GravityCompat.START);
             openChangePasswordScreen();
@@ -443,15 +479,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         }
     }
 
-    public void replaceFragment(Fragment fragment) {
+    public void replaceFragment(Fragment fragment, String tag) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.content_frame, fragment).commitAllowingStateLoss();
+        transaction.replace(R.id.content_frame, fragment, tag).commitAllowingStateLoss();
     }
 
-    public void addFragment(Fragment fragment) {
+    public void addFragment(Fragment fragment, String tag) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(R.id.content_frame, fragment)
-                .addToBackStack(fragment.getClass().getName())
+        transaction.add(R.id.content_frame, fragment, tag)
+//                .addToBackStack(fragment.getClass().getName())
+                .addToBackStack(tag)
                 .commit();
     }
 
@@ -555,6 +592,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     protected void onDestroy() {
         super.onDestroy();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
+        if (GlobalFunction.subscriptionListener != null) {
+            GlobalFunction.subscriptionListener.remove();
+        }
     }
 
     public void downloadSong(Song song) {
@@ -586,6 +626,17 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 Toast.makeText(this, getString(R.string.msg_permission_denied),
                         Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+    @Override
+    protected void onNewIntent(@NonNull Intent intent) {
+        super.onNewIntent(intent);
+        ZaloPaySDK.getInstance().onResult(intent);
+        UpgradeFragment fragment = (UpgradeFragment) getSupportFragmentManager().findFragmentByTag("UpgradeFragment");
+        if (fragment != null) {
+            //Log.d("ZaloPay", "onNewIntent triggered!");
+            fragment.handlePaymentResult(intent);
         }
     }
 }

@@ -26,7 +26,15 @@
                 android:layout_width="@dimen/define_dimen_50"
                 android:layout_height="@dimen/define_dimen_50"
                 android:src="@drawable/ic_avatar_default"/>
-
+            <TextView
+                android:id="@+id/tv_app_version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/label_app_version_free"
+                android:layout_marginTop="@dimen/define_dimen_5"
+                android:textColor="@color/colorPrimaryDark"
+                android:textStyle="bold"
+                android:textSize="@dimen/text_size_normal" />
             <TextView
                 android:id="@+id/tv_user_email"
                 android:layout_width="match_parent"
@@ -234,6 +242,28 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/menu_contact"
+                        android:textColor="@color/colorPrimaryDark"
+                        android:textSize="@dimen/text_size_normal" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/layout_menu_upgrade"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/define_dimen_14"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_menu_upgrade"
+                        android:layout_marginEnd="@dimen/define_dimen_10" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/menu_upgrade"
                         android:textColor="@color/colorPrimaryDark"
                         android:textSize="@dimen/text_size_normal" />
                 </LinearLayout>

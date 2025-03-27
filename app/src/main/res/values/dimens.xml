@@ -33,6 +33,7 @@
     <dimen name="define_dimen_150">150dp</dimen>
     <dimen name="define_dimen_200">200dp</dimen>
     <dimen name="define_dimen_250">250dp</dimen>
+    <dimen name="define_dimen_400">400dp</dimen>
 
     <!-- Text size -->
     <dimen name="text_size_xxtiny">4sp</dimen>

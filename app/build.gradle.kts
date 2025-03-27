@@ -36,7 +36,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
@@ -50,6 +49,10 @@ dependencies {
     implementation(libs.circleindicator)
     implementation(libs.gson)
     implementation(libs.play.services.ads)
+    implementation(libs.okhttp)
+    implementation(libs.commons.codec)
+    implementation(files("libs/zpdk-release-v3.1.aar"))
+    implementation(libs.firebase.firestore)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

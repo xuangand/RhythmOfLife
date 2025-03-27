@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-configuration android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-feature
         android:name="android.hardware.telephony"
         android:required="false" />
@@ -27,6 +28,12 @@
         android:theme="@style/AppTheme"
         tools:targetApi="31">
         <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713"
+            />
+        <!-- Sample AdMob app ID: ca-app-pub-3940256099942544~3347511713 -->
+<!--            android:value="ca-app-pub-3018892996143210~1421840997"-->
+        <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_small_push_notification" />
 
@@ -48,13 +55,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3018892996143210~1421840997"/>
 
         <activity
-            android:exported="false"
-            android:name="com.xuangand.rhythmoflife.activity.MainActivity" />
+            android:exported="true"
+            android:name="com.xuangand.rhythmoflife.activity.MainActivity"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="demozpdk"  android:host="app" />
+            </intent-filter>
+        </activity>
 
         <activity
             android:exported="false"
